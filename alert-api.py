@@ -9,32 +9,47 @@ GPIO.setwarnings(False)  # don't show warnings
 al = Alertmanager("http://prometheus.lan.uctrl.net:9093")
 
 colors = {
-        'red': 1,
-        'orange': 2,
-        'green': 3,
-        'blue': 4,
-        'clear': 5
-        }
-
-types = {
-        'alert': {
-            'color': 'red',
+        'red': {
+            'io': 1,
+            'steady': True,
             'prev': 0
             },
-        'warn': {
-            'color': 'orange',
+        'orange': {
+            'io': 2,
+            'steady': True,
+            'prev': 0
+            },
+        'green': {
+            'io': 3,
+            'steady': False,
+            'prev': 0
+            },
+        'blue': {
+            'io': 4,
+            'steady': True,
+            'prev': 0
+            },
+        'clear': {
+            'io': 5,
+            'steady': False,
             'prev': 0
             }
         }
 
+severities = {
+        'alert': 'red',
+        'warn': 'orange',
+        'info': 'white'
+        }
+
 boot_seq = ['clear', 'blue', 'green', 'orange', 'red']
 
-for color, io in colors.items():
-    GPIO.setup(io, GPIO.OUT)
+for c, v in colors.items():
+    GPIO.setup(v['io'], GPIO.OUT)
 
 
 def setColor(color, state):
-    io = colors[color]
+    io = colors[color]['io']
 
     if GPIO.input(io) is not int(state):
         print('Setting color', color.upper(), str(state))
@@ -55,38 +70,45 @@ while True:
     start = time.time()
 
     for alert in al.alerts():
-        if alert["labels"]["alertname"] == "DeadMansSwitch":
+        if 'color' in alert["labels"]:
+            c = alert["labels"]["color"]
+        elif 'severity' in alert["labels"]:
+            c = severities[alert["labels"]["severity"]]
+        else:
             continue
 
-        for t in types:
-            if alert["labels"]["severity"] == t:
-                d[t].append(alert["status"]["state"])
+        d[c].append(alert["status"]["state"])
         
-    for t in types:
-        print(t, json.dumps(Counter(d[t]), indent=4, sort_keys=True))
+    for c in colors:
+        print(c, json.dumps(Counter(d[c]), indent=4, sort_keys=True))
 
     for x in range(0, 10):
-        for t, v in types.items():
-            if Counter(d[t])['active'] > 0:
-                setColor(v['color'], True)
+        for c, v in colors.items():
+            if (Counter(d[c])['active'] > 0 and v['steady']) \
+            or (Counter(d[c])['active'] > v['prev'] and not v['steady']):
+                setColor(c, True)
 
         time.sleep(.5)
 
-        for t, v in types.items():
-            if v['prev'] < Counter(d[t])['active']:
-                setColor(v['color'], False)
+        # Turn color off if active alerts have increased, causing color to flash
+        for c, v in colors.items():
+            if Counter(d[c])['active'] > v['prev']:
+                setColor(c, False)
 
         time.sleep(.5)
 
-    setColor('green', False)
+    for c, v in colors.items():
+        if c == 'green':
+            continue
 
-    for t, v in types.items():
-        if Counter(d[t])['active'] == 0:
-            setColor(v['color'], False)
-        if v['prev'] > Counter(d[t])['active']:
+        if Counter(d[c])['active'] == 0:
+            setColor(c, False)
+
+        # Use green to indicate decrease in active alerts
+        if v['prev'] > Counter(d[c])['active'] and v['steady']:
             setColor('green', True)
 
-        v['prev'] = Counter(d[t])['active']
+        v['prev'] = Counter(d[c])['active']
 
     print(time.time() - start)
     print('---')
