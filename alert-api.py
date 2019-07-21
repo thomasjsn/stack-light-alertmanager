@@ -97,6 +97,9 @@ while True:
 
         time.sleep(.5)
 
+    # Turn green off, if on. It should only be on for one cycle
+    setColor('green', False)
+
     for c, v in colors.items():
         if c == 'green':
             continue
@@ -108,7 +111,7 @@ while True:
         if v['prev'] > Counter(d[c])['active'] and v['steady']:
             setColor('green', True)
 
-        v['prev'] = Counter(d[c])['active']
+        colors[c]['prev'] = Counter(d[c])['active']
 
     print(time.time() - start)
     print('---')
