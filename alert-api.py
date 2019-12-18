@@ -10,12 +10,12 @@ al = Alertmanager("http://prometheus.lan.uctrl.net:9093")
 
 colors = {
         'red': {
-            'io': 1,
+            'io': 24,
             'steady': True,
             'prev': 0
             },
         'orange': {
-            'io': 2,
+            'io': 4,
             'steady': True,
             'prev': 0
             },
@@ -25,12 +25,12 @@ colors = {
             'prev': 0
             },
         'blue': {
-            'io': 4,
+            'io': 2,
             'steady': True,
             'prev': 0
             },
         'clear': {
-            'io': 5,
+            'io': 17,
             'steady': False,
             'prev': 0
             }
@@ -46,6 +46,7 @@ boot_seq = ['clear', 'blue', 'green', 'orange', 'red']
 
 for c, v in colors.items():
     GPIO.setup(v['io'], GPIO.OUT)
+    GPIO.output(v['io'], False)
 
 
 def setColor(color, state):
@@ -63,7 +64,9 @@ def bootSequence():
         setColor(color, False)
 
 
+time.sleep(1)
 bootSequence()
+time.sleep(1)
 
 while True:
     d = defaultdict(list)
