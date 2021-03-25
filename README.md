@@ -1,10 +1,10 @@
-# Stack lights for Alertmanager using Raspberry Pi
+# Output HAT for Raspberry Pi, 5 Darlington-transistors
 
 > Raspberry Pi driver shield for stack lights.
 
 Project documentation available at: https://blog.cavelab.dev/2019/12/rpi-stack-lights-controller/
 
-![Stack lights for Alertmanager using Raspberry Pi](https://i.logistics.cavelab.net/large/2610.jpeg)
+![Output HAT for Raspberry Pi, 5 Darlington-transistors](https://i.logistics.cavelab.net/large/2610.jpeg)
 
 ## Author
 **Thomas Jensen**
