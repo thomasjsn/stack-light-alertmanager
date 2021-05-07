@@ -1,5 +1,7 @@
 # Stack lights for Alertmanager using Raspberry Pi
 
+> Raspberry Pi driver shield for stack lights.
+
 Project documentation available at: https://blog.cavelab.dev/2019/12/rpi-stack-lights-controller/
 
 ![Stack lights for Alertmanager using Raspberry Pi](https://i.logistics.cavelab.net/large/2645.jpeg)
